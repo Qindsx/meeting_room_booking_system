@@ -35,7 +35,7 @@ import { ConfigModule } from '@nestjs/config';
     EmailModule,
     ConfigModule.forRoot({
       isGlobal:true,
-      envFilePath:'.env'
+      envFilePath:'src/.env'
     })
   ],
   controllers: [AppController],

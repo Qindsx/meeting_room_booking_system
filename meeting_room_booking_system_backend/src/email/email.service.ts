@@ -10,8 +10,8 @@ export class EmailService {
 
   constructor(private configServer: ConfigService){
     this.transporter = createTransport({
-      host: 'smtp.qq.com',
-      prot:587,
+      host: this.configServer.get('nodemailer_host'),
+      prot:this.configServer.get('nodemailer_port'),
       auth:{
         user: this.configServer.get('EMAIL_USER'),
         pass: this.configServer.get('EMAIL_AUTH')
