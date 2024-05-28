@@ -1,16 +1,20 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete,Query,Inject } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, Inject, UnauthorizedException } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { EmailService } from 'src/email/email.service';
 import { RedisService } from 'src/redis/redis.service';
+import { LoginUserDto } from './dto/login-user.dto';
+import { JwtService } from '@nestjs/jwt';
+import { In } from 'typeorm';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) { }
 
-  // 注册接口
+  // 注册接口 
   @Post('register')
   async register(@Body() registerUser: RegisterUserDto) {
     return await this.userService.register(registerUser)
@@ -26,21 +30,141 @@ export class UserController {
 
   // 邮箱发送接口
   @Get('register-captcha')
-  async captcha(@Query('address') address:string) {
+  async captcha(@Query('address') address: string) {
     // 获取随机验证码
-    const code = Math.random().toString().slice(2,8)
+    const code = Math.random().toString().slice(2, 8)
 
     // 将随机验证码存入redis中，并添加到期时间
-    this.redisService.set(`captcha_${address}`,code, 5 * 60)
+    this.redisService.set(`captcha_${address}`, code, 5 * 60)
 
     // 调用emailServer中的发送邮件接口
     this.emailService.sendEmail({
-      to:address,
+      to: address,
       subject: '注册验证码',
-      html:`<h1>您的验证码是${code}</h1>`
+      html: `<h1>您的验证码是${code}</h1>`
     })
 
     return '发送成功'
 
   }
+
+  // 数据初始化接口
+  @Get("init-data")
+  async initData() {
+    await this.userService.initData();
+    return 'done';
+  }
+
+  @Inject(JwtService)
+  private jwtService: JwtService;
+
+  @Inject(ConfigService)
+  private configService: ConfigService;
+
+  //  普通用户登录
+  @Post('login')
+  async login(@Body() loginUser: LoginUserDto) {
+    const vo = await this.userService.login(loginUser, false)
+
+    vo.accessToken = this.jwtService.sign({
+      userId: vo.userInfo.id,
+      username: vo.userInfo.username,
+      roles: vo.userInfo.roles,
+      permissions: vo.userInfo.permissions
+    }, { expiresIn: this.configService.get('jwt_access_token_expires_time') || '30m' })
+
+    vo.refreshToken = this.jwtService.sign({
+      userId: vo.userInfo.id
+    }, {
+      expiresIn: this.configService.get('jwt_refresh_token_expres_time') || '7d'
+    });
+
+    return vo
+  }
+
+  //  管理员用户登录
+  @Post('admin/login')
+  async adminLogin(@Body() loginUser: LoginUserDto) {
+    const vo = await this.userService.login(loginUser, true)
+
+    vo.accessToken = this.jwtService.sign({
+      userId: vo.userInfo.id,
+      username: vo.userInfo.username,
+      roles: vo.userInfo.roles,
+      permissions: vo.userInfo.permissions
+    }, {
+      expiresIn: this.configService.get('jwt_access_token_expires_time') || '30m'
+    });
+
+    vo.refreshToken = this.jwtService.sign({
+      userId: vo.userInfo.id
+    }, {
+      expiresIn: this.configService.get('jwt_refresh_token_expres_time') || '7d'
+    });
+    return vo
+  }
+
+  @Get('refresh')
+  async refresh(@Query('refreshToken') refreshToken: string) {
+    try {
+      const data = this.jwtService.verify(refreshToken);
+
+      const user = await this.userService.findUserById(data.userId, false);
+
+      const access_token = this.jwtService.sign({
+        userId: user.id,
+        username: user.username,
+        roles: user.roles,
+        permissions: user.permissions
+      }, {
+        expiresIn: this.configService.get('jwt_access_token_expires_time') || '30m'
+      });
+
+      const refresh_token = this.jwtService.sign({
+        userId: user.id
+      }, {
+        expiresIn: this.configService.get('jwt_refresh_token_expres_time') || '7d'
+      });
+
+      return {
+        access_token,
+        refresh_token
+      }
+    } catch (e) {
+      throw new UnauthorizedException('token 已失效，请重新登录');
+    }
+  }
+
+  @Get('admin/refresh')
+  async adminRefresh(@Query('refreshToken') refreshToken: string) {
+    try {
+      const data = this.jwtService.verify(refreshToken);
+
+      const user = await this.userService.findUserById(data.userId, true);
+
+      const access_token = this.jwtService.sign({
+        userId: user.id,
+        username: user.username,
+        roles: user.roles,
+        permissions: user.permissions
+      }, {
+        expiresIn: this.configService.get('jwt_access_token_expires_time') || '30m'
+      });
+
+      const refresh_token = this.jwtService.sign({
+        userId: user.id
+      }, {
+        expiresIn: this.configService.get('jwt_refresh_token_expres_time') || '7d'
+      });
+
+      return {
+        access_token,
+        refresh_token
+      }
+    } catch (e) {
+      throw new UnauthorizedException('token 已失效，请重新登录');
+    }
+  }
+
+
 }
