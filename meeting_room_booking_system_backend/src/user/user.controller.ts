@@ -11,6 +11,7 @@ import { In } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { RequireLogin, UserInfo } from 'src/custom.decorator';
 import { UserDetailVo } from './vo/user-info.vo';
+import { UpdateUserPasswordDto } from './dto/update-user-password.dto';
 
 @Controller('user')
 export class UserController {
@@ -37,7 +38,7 @@ export class UserController {
     const code = Math.random().toString().slice(2, 8)
 
     // 将随机验证码存入redis中，并添加到期时间
-    this.redisService.set(`captcha_${address}`, code, 5 * 60)
+    this.redisService.set(`captcha_${address}`, code, 30 * 60)
 
     // 调用emailServer中的发送邮件接口
     this.emailService.sendEmail({
@@ -185,5 +186,55 @@ export class UserController {
     return vo
   }
 
+  //  修改密码接口
+  @Post(['update_password', 'admin/update_password'])
+  @RequireLogin()
+  async updatePassword(@UserInfo('userId') userId: number, @Body() passwordDto: UpdateUserPasswordDto) {
+    return await this.userService.updatePassword(userId, passwordDto)
+  }
+
+  // 修改密码邮箱验证码发送接口
+  @Get('update_password/captcha')
+  async updateCaptcha(@Query('address') address: string) {
+    const code = Math.random().toString().slice(2, 8);
+
+    await this.redisService.set(`update_password_captcha_${address}`, code, 10 * 60);
+
+    await this.emailService.sendEmail({
+      to: address,
+      subject: '更改密码验证码',
+      html: `<p>你的验证码是 ${code}</p>`
+    });
+    return '发送成功';
+  }
+
+  // 修改用户信息
+  @Post(['update', 'admin/update'])
+  @RequireLogin()
+  async updateUser(@UserInfo('userId') userId:number,@Body() updateUserDto: UpdateUserDto){
+    return await this.userService.updateUser( userId,updateUserDto)
+  }
+
+   // 修改密码邮箱验证码发送接口
+   @Get('update_userInfo/captcha')
+   async updateUserCaptcha(@Query('address') address: string) {
+     const code = Math.random().toString().slice(2, 8);
+ 
+     await this.redisService.set(`update_password_captcha_${address}`, code, 10 * 60);
+ 
+     await this.emailService.sendEmail({
+       to: address,
+       subject: '更改密码验证码',
+       html: `<p>你的验证码是 ${code}</p>`
+     });
+     return '发送成功';
+   }
+
+   // 用户列表
+   @Get('list')
+   @RequireLogin()
+   async userList(@Query() {}){}
+
+   // 用户冻结
 
 }

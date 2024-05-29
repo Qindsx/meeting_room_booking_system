@@ -4,6 +4,7 @@ import { Permission } from './user/entities/permission.entity';
 import { Request } from 'express'
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
+import { UnLoginException } from './unlogin.filter';
 
 interface JwtUserData {
   userId:number
@@ -68,7 +69,8 @@ export class LoginGuard implements CanActivate {
       }
       return true
     } catch (error) {
-      throw new UnauthorizedException('token失效')
+      throw new UnLoginException()
+      // throw new UnauthorizedException('token失效')
     }
   }
 }

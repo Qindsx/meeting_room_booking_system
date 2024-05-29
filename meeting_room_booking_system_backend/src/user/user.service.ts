@@ -11,6 +11,7 @@ import { Repository } from 'typeorm';
 import { RedisService } from 'src/redis/redis.service';
 import { md5 } from 'src/utils';
 import { LoginUserVo } from './vo/login.user.vo';
+import { UpdateUserPasswordDto } from './dto/update-user-password.dto';
 
 @Injectable()
 export class UserService {
@@ -112,7 +113,7 @@ export class UserService {
         username: loginUserDto.username,
         isAdmin
       },
-      relations: [ 'roles', 'roles.permissions']
+      relations: ['roles', 'roles.permissions']
     });
 
     if (!user) {
@@ -153,38 +154,99 @@ export class UserService {
   }
 
   async findUserById(userId: number, isAdmin: boolean) {
-    const user =  await this.userRepository.findOne({
-        where: {
-            id: userId,
-            isAdmin
-        },
-        relations: [ 'roles', 'roles.permissions']
+    const user = await this.userRepository.findOne({
+      where: {
+        id: userId,
+        isAdmin
+      },
+      relations: ['roles', 'roles.permissions']
     });
 
     return {
-        id: user.id,
-        username: user.username,
-        isAdmin: user.isAdmin,
-        roles: user.roles.map(item => item.name),
-        permissions: user.roles.reduce((arr, item) => {
-            item.permissions.forEach(permission => {
-                if(arr.indexOf(permission) === -1) {
-                    arr.push(permission);
-                }
-            })
-            return arr;
-        }, [])
+      id: user.id,
+      username: user.username,
+      isAdmin: user.isAdmin,
+      roles: user.roles.map(item => item.name),
+      permissions: user.roles.reduce((arr, item) => {
+        item.permissions.forEach(permission => {
+          if (arr.indexOf(permission) === -1) {
+            arr.push(permission);
+          }
+        })
+        return arr;
+      }, [])
     }
-} 
+  }
 
   // 查询用户详细信息
-  async findUserDetailById( userId:number) {
+  async findUserDetailById(userId: number) {
     const user = await this.userRepository.findOne({
-      where:{
-        id:userId
+      where: {
+        id: userId
       }
     })
     return user
+  }
+
+  // 更新用户密码
+  async updatePassword(userId: number, passwordDto: UpdateUserPasswordDto) {
+    const captcha = await this.redisService.get(`update_password_captcha_${passwordDto.email}`)
+
+    if (!captcha) {
+      throw new HttpException('验证码已过期', HttpStatus.BAD_REQUEST)
+    }
+
+    if (captcha != passwordDto.captcha) {
+      throw new HttpException('验证码错误', HttpStatus.BAD_REQUEST)
+    }
+
+    const foundUser = await this.userRepository.findOne({
+      where: {
+        id: userId
+      }
+    })
+
+    foundUser.password = md5(passwordDto.password)
+
+    try {
+      await this.userRepository.save(foundUser)
+      return '密码修改成功'
+    } catch (error) {
+      return '密码修改失败'
+    }
+  }
+
+  // 更新用户信息
+  async updateUser(userId: number, updateUserDto: UpdateUserDto) {
+    const captcha = await this.redisService.get(`update_password_captcha_${updateUserDto.email}`)
+    if (!captcha) {
+      throw new HttpException('验证码已过期', HttpStatus.BAD_REQUEST)
+    }
+
+    if (captcha != updateUserDto.captcha) {
+      throw new HttpException('验证码错误', HttpStatus.BAD_REQUEST)
+    }
+
+    const foundUser = await this.userRepository.findOne({
+      where: {
+        id: userId
+      }
+    })
+
+    if (updateUserDto.nickName) {
+      foundUser.nickName = updateUserDto.nickName
+    }
+
+    if(updateUserDto.headPic){
+      foundUser.headPic = updateUserDto.headPic
+    }
+
+    try {
+      await this.userRepository.save(foundUser)
+      return '用户信息修改成功'
+    } catch (error) {
+      return '用户信息修改成功';
+    }
   }
 
 }
