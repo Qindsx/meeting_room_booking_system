@@ -55,8 +55,11 @@ export class LoginGuard implements CanActivate {
     // 验证token
     try {
       const token = authorization.split(' ')[1]
+
+      // 将token中携带的用户信息提取出来
       const data = this.jwtService.verify(token)
 
+      // 将用户信息放入request上下文中
       request.user = {
         userId: data.userId,
         username: data.username,

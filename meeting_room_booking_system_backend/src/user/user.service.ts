@@ -175,6 +175,16 @@ export class UserService {
             return arr;
         }, [])
     }
-}
+} 
+
+  // 查询用户详细信息
+  async findUserDetailById( userId:number) {
+    const user = await this.userRepository.findOne({
+      where:{
+        id:userId
+      }
+    })
+    return user
+  }
 
 }
