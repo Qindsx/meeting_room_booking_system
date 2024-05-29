@@ -14,4 +14,6 @@ export class UserDetailVo {
   isFrozen: boolean;
 
   createTime: Date;
+
+  isAdmin:boolean
 }

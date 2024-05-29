@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, Inject, UnauthorizedException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, Inject, UnauthorizedException, ParseIntPipe, DefaultValuePipe } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -12,6 +12,9 @@ import { ConfigService } from '@nestjs/config';
 import { RequireLogin, UserInfo } from 'src/custom.decorator';
 import { UserDetailVo } from './vo/user-info.vo';
 import { UpdateUserPasswordDto } from './dto/update-user-password.dto';
+import { User } from './entities/user.entity';
+import { FreezeUserDto } from './dto/freeze-user-dto';
+import { generateParseIntPipe } from 'src/utils';
 
 @Controller('user')
 export class UserController {
@@ -182,6 +185,7 @@ export class UserController {
     vo.nickName = user.nickName;
     vo.createTime = user.createTime;
     vo.isFrozen = user.isFrozen;
+    vo.isAdmin = user.isAdmin
 
     return vo
   }
@@ -211,30 +215,44 @@ export class UserController {
   // 修改用户信息
   @Post(['update', 'admin/update'])
   @RequireLogin()
-  async updateUser(@UserInfo('userId') userId:number,@Body() updateUserDto: UpdateUserDto){
-    return await this.userService.updateUser( userId,updateUserDto)
+  async updateUser(@UserInfo('userId') userId: number, @Body() updateUserDto: UpdateUserDto) {
+    return await this.userService.updateUser(userId, updateUserDto)
   }
 
-   // 修改密码邮箱验证码发送接口
-   @Get('update_userInfo/captcha')
-   async updateUserCaptcha(@Query('address') address: string) {
-     const code = Math.random().toString().slice(2, 8);
- 
-     await this.redisService.set(`update_password_captcha_${address}`, code, 10 * 60);
- 
-     await this.emailService.sendEmail({
-       to: address,
-       subject: '更改密码验证码',
-       html: `<p>你的验证码是 ${code}</p>`
-     });
-     return '发送成功';
-   }
+  // 修改密码邮箱验证码发送接口
+  @Get('update_userInfo/captcha')
+  async updateUserCaptcha(@Query('address') address: string) {
+    const code = Math.random().toString().slice(2, 8);
 
-   // 用户列表
-   @Get('list')
-   @RequireLogin()
-   async userList(@Query() {}){}
+    await this.redisService.set(`update_password_captcha_${address}`, code, 10 * 60);
 
-   // 用户冻结
+    await this.emailService.sendEmail({
+      to: address,
+      subject: '更改密码验证码',
+      html: `<p>你的验证码是 ${code}</p>`
+    });
+    return '发送成功';
+  }
+
+  // 用户列表
+  @Get('list')
+  @RequireLogin()
+  async userList(
+    @Query('pageNo', new DefaultValuePipe(1), generateParseIntPipe('pageNo')) pageNo: number,
+    @Query('pageSize', new DefaultValuePipe(2), generateParseIntPipe('pageSize')) pageSize: number,
+    @Query('username') username: string,
+    @Query('nickName') nickName: string,
+    @Query('email') email: string
+  ) {
+    return await this.userService.findUserByPage(pageNo, pageSize,username,nickName,email)
+  }
+
+  // 用户冻结
+  @Post('freeze')
+  @RequireLogin()
+  async freeze(@Body() freezeUserDto: FreezeUserDto, @UserInfo('userId') userId: number) {
+    await this.userService.freezeUserById(freezeUserDto, userId)
+    return 'success'
+  }
 
 }

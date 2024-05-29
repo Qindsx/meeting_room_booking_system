@@ -7,11 +7,12 @@ import { Permission } from './entities/permission.entity'
 import { Role } from './entities/role.entity'
 import { InjectRepository } from '@nestjs/typeorm';
 import { RegisterUserDto } from './dto/register-user.dto';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { RedisService } from 'src/redis/redis.service';
 import { md5 } from 'src/utils';
 import { LoginUserVo } from './vo/login.user.vo';
 import { UpdateUserPasswordDto } from './dto/update-user-password.dto';
+import { FreezeUserDto } from './dto/freeze-user-dto';
 
 @Injectable()
 export class UserService {
@@ -237,7 +238,7 @@ export class UserService {
       foundUser.nickName = updateUserDto.nickName
     }
 
-    if(updateUserDto.headPic){
+    if (updateUserDto.headPic) {
       foundUser.headPic = updateUserDto.headPic
     }
 
@@ -246,6 +247,77 @@ export class UserService {
       return '用户信息修改成功'
     } catch (error) {
       return '用户信息修改成功';
+    }
+  }
+
+  //用户冻结
+  async freezeUserById(freezeUserDto: FreezeUserDto,requireId: number) {
+    // requireId 发起人id
+
+    const requireUser = await this.userRepository.findOne({
+      where:{
+        id:requireId
+      }
+    })
+    // 需要判断请求用户是否为管理员
+    if( requireUser.isAdmin == false ){
+      throw new HttpException('无权限操作', HttpStatus.BAD_REQUEST)
+    }
+
+
+    const user = await this.userRepository.findOne({
+      where: {
+        id: freezeUserDto.id
+      }
+    })
+
+    user.isFrozen = !freezeUserDto.isFrozen
+
+    await this.userRepository.save(user)
+
+  }
+
+  // 用户列表 分页查询
+  async findUserByPage(
+    pageNo:number,
+    pageSize:number,
+    username:string,
+    nickName:string,
+    email:string,
+  ){
+    const sikp = (pageNo - 1) * pageSize
+
+    const condition:Record<string,any> = {}
+
+    if(username) {
+      condition.username = Like(`%${username}%`)
+    }
+
+    if( nickName ){
+      condition.nickName = Like(`%${nickName}%`)
+    }
+
+    if( email ){
+      condition.email = Like(`%${email}%`)
+    }
+    const [users,totalCount] = await this.userRepository.findAndCount({
+      select:[
+        'id',
+        'username',
+        'nickName',
+        'email',
+        'phoneNumber',
+        'headPic',
+        'createTime',
+        'isFrozen'
+      ],
+      skip: sikp,
+      take: pageSize,
+      where: condition
+    })
+    return {
+      users,
+      totalCount
     }
   }
 
