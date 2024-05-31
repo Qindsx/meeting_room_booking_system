@@ -18,9 +18,13 @@ async function bootstrap() {
   app.useGlobalFilters(new CustomExceptionFilter())
   
   const config = new DocumentBuilder()
-    .setTitle('会议室预订系统')
+    .setTitle('test系统')
     .setDescription('api 接口文档')
     .setVersion('1.0')
+    .addBearerAuth({
+      type:'http',
+      description:'基于JWT认证'
+    })
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api-doc', app, document);
