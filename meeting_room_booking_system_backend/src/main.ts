@@ -29,6 +29,8 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api-doc', app, document);
 
+  app.enableCors()
+
   const configService = new ConfigService()
   console.log(configService.get('nest_server_port'))
   await app.listen(configService.get('nest_server_port'));
