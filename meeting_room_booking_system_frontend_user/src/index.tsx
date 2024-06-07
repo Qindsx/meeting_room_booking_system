@@ -9,7 +9,7 @@ function Aaa() {
   return <div>aaa</div>;
 }
 
-function Bbb(){
+function Bbb() {
   return <div>bbb</div>;
 }
 
@@ -18,7 +18,7 @@ function Layout() {
     <div><Link to="/aaa">to aaa</Link></div>
     <div><Link to="/bbb">to bbb</Link></div>
     <div>
-      <Outlet/>
+      <Outlet />
     </div>
   </div>
 }
@@ -52,4 +52,4 @@ const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 
-root.render(<RouterProvider router={router}/>);
+root.render(<RouterProvider router={router} />);
