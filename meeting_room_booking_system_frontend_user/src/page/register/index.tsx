@@ -3,8 +3,8 @@ import './register.css'
 import { useForm } from "antd/es/form/Form"
 import { getCaptcha, register } from "../../api/user"
 import { useCallback, useEffect, useState } from "react"
-import useTimeout from "../../hooks/setTimeout"
 import { Link } from "react-router-dom"
+import CaptchaButton from "../../component/CaptchaButton"
 
 export interface RegisterUser {
     username: string
@@ -36,64 +36,15 @@ const layout2 = {
 // 验证码60倒计时
 export function Register() {
     const [form] = useForm()
-
-    // loading
-    const [captchaBtnLoading, setCaptchaBtnLoading] = useState<boolean>(false)
-    // 发送成功后 需要禁用发送按钮60秒
-    const [captchaDisable, setCaptchaDisable] = useState(false)
-    // 倒计时
-    const [countdownNumber, setCountdownNumber] = useState(0)
-
     // 邮箱发送
     const sendCaptcha = useCallback(async () => {
         const address = form.getFieldValue('email')
         if (!address) {
             return message.error('请输入邮箱地址');
         }
-        setCaptchaBtnLoading(true)
-        try {
-            const { data, status } = await getCaptcha(address)
-            if (status == 200 || status == 201) {
-                message.success(data.data)
-                setCaptchaBtnLoading(false)
-                setCaptchaDisable(true)
-                setCountdownNumber(30)
-            } else {
-                setCaptchaBtnLoading(false)
-                message.error(data.data || '系统繁忙，请稍后再试');
-            }
-        } catch (error) {
-            setCaptchaBtnLoading(false)
-            message.error('网络错误，请重试')
-        }
+        const resp = await getCaptcha(address)
+        return resp
     }, [])
-
-    // 验证码60秒倒计时
-    useEffect(() => {
-        if (captchaDisable) {
-            setTimeout(() => {
-                setCaptchaDisable(false)
-            }, 30000)
-        }
-    }, [captchaDisable])
-
-    // 
-    useEffect(()=>{
-        if(countdownNumber<=0) {
-            return
-        }
-        if(captchaDisable) {
-            const timerId = setInterval(()=>{
-                setCountdownNumber((num)=>num-1)
-            },1000)
-            return ()=> clearInterval(timerId)
-        }
-    },[countdownNumber])
-
-    // 登录跳转
-    const toLogin = ()=>{
-
-    }
 
     return <div id="register-container">
         <h1>会议室预订系统</h1>
@@ -150,9 +101,10 @@ export function Register() {
                 >
                     <Input></Input>
                 </Form.Item>
-                <Button disabled={captchaDisable} loading={captchaBtnLoading} type="primary" onClick={sendCaptcha} >
+                {/* <Button disabled={captchaDisable} loading={captchaBtnLoading} type="primary" onClick={sendCaptcha} >
                     {captchaDisable ? countdownNumber : ''} 获取验证码
-                </Button>
+                </Button> */}
+                <CaptchaButton countdownDuration={30} requestCallback={sendCaptcha}></CaptchaButton>
             </div>
             <Form.Item
                 {...layout2}
