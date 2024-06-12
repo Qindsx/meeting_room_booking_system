@@ -18,6 +18,7 @@ import { generateParseIntPipe } from 'src/utils';
 import { ApiBearerAuth, ApiBody, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LoginUserVo } from './vo/login-user.vo';
 import { RefreshTokenVo } from './vo/refresh-token.vo';
+import { userInfo } from 'os';
 
 @ApiTags('User Module')
 @Controller('user')
@@ -115,6 +116,7 @@ export class UserController {
     vo.accessToken = this.jwtService.sign({
       userId: vo.userInfo.id,
       username: vo.userInfo.username,
+      email:vo.userInfo.email,
       roles: vo.userInfo.roles,
       permissions: vo.userInfo.permissions
     }, { expiresIn: this.configService.get('jwt_access_token_expires_time') || '30m' })
@@ -137,6 +139,7 @@ export class UserController {
       userId: vo.userInfo.id,
       username: vo.userInfo.username,
       roles: vo.userInfo.roles,
+      email:vo.userInfo.email,
       permissions: vo.userInfo.permissions
     }, {
       expiresIn: this.configService.get('jwt_access_token_expires_time') || '30m'
@@ -177,6 +180,7 @@ export class UserController {
         userId: user.id,
         username: user.username,
         roles: user.roles,
+        email:user.email,
         permissions: user.permissions
       }, {
         expiresIn: this.configService.get('jwt_access_token_expires_time') || '30m'
@@ -211,6 +215,7 @@ export class UserController {
         userId: user.id,
         username: user.username,
         roles: user.roles,
+        email:user.email,
         permissions: user.permissions
       }, {
         expiresIn: this.configService.get('jwt_access_token_expires_time') || '30m'
@@ -256,7 +261,7 @@ export class UserController {
   }
 
   //  修改密码接口
-  @ApiBearerAuth()
+  // @ApiBearerAuth()
   @ApiBody({
     type: UpdateUserPasswordDto
   })
@@ -265,25 +270,25 @@ export class UserController {
     description: '验证码已失效/不正确'
   })
   @Post(['update_password', 'admin/update_password'])
-  @RequireLogin()
-  async updatePassword(@UserInfo('userId') userId: number, @Body() passwordDto: UpdateUserPasswordDto) {
-    return await this.userService.updatePassword(userId, passwordDto)
+  // @RequireLogin()
+  async updatePassword(@Body() passwordDto: UpdateUserPasswordDto) {
+    return await this.userService.updatePassword(passwordDto)
   }
 
   // 修改密码邮箱验证码发送接口
   @Get('update_password/captcha')
-  @ApiBearerAuth()
-  @ApiQuery({
-    name: 'address',
-    description: '邮箱地址',
-    type: String
-  })
+  // @ApiBearerAuth()
+  // @ApiQuery({
+  //   name: 'address',
+  //   description: '邮箱地址',
+  //   type: String
+  // })
   @ApiResponse({
     type: String,
     description: '发送成功'
   })
-  @RequireLogin()
-  async updateCaptcha(@Query('address') address: string) {
+  // @RequireLogin()
+  async updateCaptcha(@UserInfo('email') address: string) {
     const code = Math.random().toString().slice(2, 8);
 
     await this.redisService.set(`update_password_captcha_${address}`, code, 10 * 60);

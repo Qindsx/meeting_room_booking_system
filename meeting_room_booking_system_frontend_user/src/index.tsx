@@ -4,6 +4,8 @@ import { RouterProvider, createBrowserRouter, Link, Outlet } from 'react-router-
 import { Login } from './page/login';
 import { Register } from './page/register';
 import { UpdatePassword } from './page/updatePassword';
+import { Index } from './page/index';
+import { UpdateInfo } from './page/updateInfo';
 
 function Aaa() {
   return <div>aaa</div>;
@@ -15,8 +17,6 @@ function Bbb() {
 
 function Layout() {
   return <div>
-    <div><Link to="/aaa">to aaa</Link></div>
-    <div><Link to="/bbb">to bbb</Link></div>
     <div>
       <Outlet />
     </div>
@@ -30,8 +30,15 @@ function ErrorPage() {
 const routes = [
   {
     path: "/",
-    element: <div>index</div>,
+    element: <Index></Index>,
     errorElement: <ErrorPage />,
+    children: [
+      {
+        path: 'update_info',
+        element: <UpdateInfo />
+      },
+    ]
+
   },
   {
     path: "login",
