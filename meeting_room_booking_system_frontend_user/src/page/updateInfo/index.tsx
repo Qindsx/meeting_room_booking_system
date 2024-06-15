@@ -1,8 +1,10 @@
 import { Button, Form, Input, message } from 'antd';
 import { useForm } from 'antd/es/form/Form';
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import './updateInfo.css';
-import { useNavigate } from 'react-router-dom';
+import { getUserInfo, updateInfo, updateUserInfoCaptcha } from '../../api/user';
+import CaptchaButton from '../../component/CaptchaButton';
+import { HeadPicUpload } from '../../component/PicUpload';
 
 export interface UserInfo {
     headPic: string;
@@ -18,14 +20,55 @@ const layout1 = {
 
 export function UpdateInfo() {
     const [form] = useForm();
-    const navigate = useNavigate();
 
     const onFinish = useCallback(async (values: UserInfo) => {
-        
+        try {
+            const res = await updateInfo(values);
+
+            if (res.status === 201 || res.status === 200) {
+                const { message: msg, data } = res.data;
+                if (msg === 'success') {
+                    message.success('用户信息更新成功');
+                } else {
+                    message.error(data);
+                }
+            } else {
+                message.error('系统繁忙，请稍后再试');
+            }
+        } catch (error) {
+            message.error('系统繁忙，请稍后再试');
+        }
     }, []);
 
-    const sendCaptcha = useCallback(async function () {
-    }, []);
+    const sendCaptcha = useCallback(async () => {
+        const address = form.getFieldValue('email')
+        if (!address) {
+            return message.error('请输入邮箱地址');
+        }
+        debugger
+        const resp = await updateUserInfoCaptcha()
+        return resp
+    }, [])
+
+    useEffect(() => {
+        async function query() {
+            try {
+                const res = await getUserInfo()
+
+                const { data } = res.data;
+
+                if (res.status === 201 || res.status === 200) {
+                    form.setFieldValue('headPic', data.headPic);
+                    form.setFieldValue('nickName', data.nickName);
+                    form.setFieldValue('email', data.email);
+                }
+            } catch (error) {
+                console.log(error)
+            }
+        }
+        query()
+    }, [])
+
 
     return <div id="updateInfo-container">
         <Form
@@ -39,10 +82,10 @@ export function UpdateInfo() {
                 label="头像"
                 name="headPic"
                 rules={[
-                    { required: true, message: '请输入头像!' },
+                    { required: true, message: '请上传头像!' },
                 ]}
             >
-                <Input/>
+                <HeadPicUpload value={form.getFieldValue('headPic')}></HeadPicUpload>
             </Form.Item>
 
             <Form.Item
@@ -60,10 +103,10 @@ export function UpdateInfo() {
                 name="email"
                 rules={[
                     { required: true, message: '请输入邮箱!' },
-                    { type: "email", message: '请输入合法邮箱地址!'}
+                    { type: "email", message: '请输入合法邮箱地址!' }
                 ]}
             >
-                <Input />
+                <Input disabled />
             </Form.Item>
 
             <div className='captcha-wrapper'>
@@ -74,7 +117,8 @@ export function UpdateInfo() {
                 >
                     <Input />
                 </Form.Item>
-                <Button type="primary" onClick={sendCaptcha}>发送验证码</Button>
+                <CaptchaButton countdownDuration={30} requestCallback={sendCaptcha}></CaptchaButton>
+                {/* <Button type="primary" onClick={sendCaptcha}>发送验证码</Button> */}
             </div>
 
             <Form.Item
@@ -82,9 +126,9 @@ export function UpdateInfo() {
                 label=" "
             >
                 <Button className='btn' type="primary" htmlType="submit">
-                    修改密码
+                    确认修改
                 </Button>
             </Form.Item>
         </Form>
-    </div>   
+    </div>
 }

@@ -44,5 +44,5 @@ export async function updateInfo(data: UserInfo) {
 }
 
 export async function updateUserInfoCaptcha() {
-    return await axiosInstance.get('/user/update/captcha');
+    return await axiosInstance.get('/user/update_userInfo/captcha');
 }
