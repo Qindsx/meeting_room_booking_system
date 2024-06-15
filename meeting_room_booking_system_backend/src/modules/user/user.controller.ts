@@ -3,18 +3,18 @@ import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { RegisterUserDto } from './dto/register-user.dto';
-import { EmailService } from 'src/email/email.service';
-import { RedisService } from 'src/redis/redis.service';
+import { EmailService } from 'src/modules/email/email.service';
+import { RedisService } from 'src/modules/redis/redis.service';
 import { LoginUserDto } from './dto/login-user.dto';
 import { JwtService } from '@nestjs/jwt';
 import { In } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
-import { RequireLogin, UserInfo } from 'src/custom.decorator';
+import { RequireLogin, UserInfo } from 'src/decorator/custom.decorator';
 import { UserDetailVo } from './vo/user-info.vo';
 import { UpdateUserPasswordDto } from './dto/update-user-password.dto';
 import { User } from './entities/user.entity';
 import { FreezeUserDto } from './dto/freeze-user-dto';
-import { generateParseIntPipe } from 'src/utils';
+import { generateParseIntPipe } from 'src/utils/utils';
 import { ApiBearerAuth, ApiBody, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LoginUserVo } from './vo/login-user.vo';
 import { RefreshTokenVo } from './vo/refresh-token.vo';
@@ -321,16 +321,21 @@ export class UserController {
     return await this.userService.updateUser(userId, updateUserDto)
   }
 
-  // 修改密码邮箱验证码发送接口
+  // 修改用户信息邮箱验证码发送接口
   @Get('update_userInfo/captcha')
-  async updateUserCaptcha(@Query('address') address: string) {
+  @ApiResponse({
+    type: String,
+    description: '发送成功'
+  })
+  @RequireLogin()
+  async updateUserCaptcha(@UserInfo('email') address: string) {
     const code = Math.random().toString().slice(2, 8);
 
     await this.redisService.set(`update_password_captcha_${address}`, code, 10 * 60);
 
     await this.emailService.sendEmail({
       to: address,
-      subject: '更改密码验证码',
+      subject: '修改用户信息验证码',
       html: `<p>你的验证码是 ${code}</p>`
     });
     return '发送成功';

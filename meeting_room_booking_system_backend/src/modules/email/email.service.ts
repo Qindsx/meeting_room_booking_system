@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { CreateEmailDto } from './dto/create-email.dto';
-import { UpdateEmailDto } from './dto/update-email.dto';
+import { CreateEmailDto } from '../modules/email/dto/create-email.dto';
+import { UpdateEmailDto } from '../modules/email/dto/update-email.dto';
 import { createTransport,Transporter} from 'nodemailer'
 import { ConfigService } from '@nestjs/config';
 
