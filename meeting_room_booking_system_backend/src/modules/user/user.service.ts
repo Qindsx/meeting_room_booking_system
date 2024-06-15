@@ -8,8 +8,8 @@ import { Role } from './entities/role.entity'
 import { InjectRepository } from '@nestjs/typeorm';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { Like, Repository } from 'typeorm';
-import { RedisService } from 'src/redis/redis.service';
-import { md5 } from 'src/utils';
+import { RedisService } from 'src/modules/redis/redis.service';
+import { md5 } from 'src/utils/utils';
 import { LoginUserVo } from './vo/login-user.vo';
 import { UpdateUserPasswordDto } from './dto/update-user-password.dto';
 import { FreezeUserDto } from './dto/freeze-user-dto';

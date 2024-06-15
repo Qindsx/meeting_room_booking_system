@@ -1,10 +1,10 @@
 import { CanActivate, ExecutionContext, Injectable,Inject, HttpException, UnauthorizedException } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { Permission } from './user/entities/permission.entity';
+import { Permission } from '../modules/user/entities/permission.entity';
 import { Request } from 'express'
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
-import { UnLoginException } from './unlogin.filter';
+import { UnLoginException } from '../filter/unlogin.filter';
 
 interface JwtUserData {
   userId:number

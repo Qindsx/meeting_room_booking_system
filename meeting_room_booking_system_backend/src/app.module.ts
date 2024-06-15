@@ -2,17 +2,18 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppService } from './app.service';
-import { UserModule } from './user/user.module';
-import { Role } from './user/entities/role.entity';
-import { User } from './user/entities/user.entity';
-import { Permission } from './user/entities/permission.entity';
-import { RedisModule } from './redis/redis.module';
-import { EmailModule } from './email/email.module';
+import { UserModule } from './modules/user/user.module';
+import { Role } from './modules/user/entities/role.entity';
+import { User } from './modules/user/entities/user.entity';
+import { Permission } from './modules/user/entities/permission.entity';
+import { RedisModule } from './modules/redis/redis.module';
+import { EmailModule } from './modules/email/email.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { APP_GUARD } from '@nestjs/core'
-import { LoginGuard } from './login.guard';
-import { PermissionGuard } from './permission.guard';
+import { LoginGuard } from './guard/login.guard';
+import { PermissionGuard } from './guard/permission.guard';
+import { UploadModule } from './modules/upload/upload.module';
 
 @Module({
   imports: [
@@ -52,7 +53,8 @@ import { PermissionGuard } from './permission.guard';
     ConfigModule.forRoot({
       isGlobal:true,
       envFilePath:'src/.env'
-    })
+    }),
+    UploadModule,
   ],
   controllers: [AppController],
   providers: [AppService,{
