@@ -6,7 +6,6 @@ import { Register } from './page/register';
 import { UpdatePassword } from './page/updatePassword';
 import { Index } from './page/index';
 import { UpdateInfo } from './page/updateInfo';
-import { ModifyMenu } from './page/modifyMenu';
 
 function Aaa() {
   return <div>aaa</div>;
@@ -35,18 +34,8 @@ const routes = [
     errorElement: <ErrorPage />,
     children: [
       {
-        path: "user",
-        element: <ModifyMenu></ModifyMenu>,
-        children: [
-          {
-            path: 'update_info',
-            element: <UpdateInfo />
-          },
-          {
-            path: "update_password",
-            element: <UpdatePassword />,
-          }
-        ]
+        path: 'update_info',
+        element: <UpdateInfo />
       },
     ]
 
@@ -59,8 +48,12 @@ const routes = [
     path: "register",
     element: <Register />,
   },
+  {
+    path: "update_password",
+    element: <UpdatePassword />,
+  }
 ];
-export const router = createBrowserRouter(routes);
+const router = createBrowserRouter(routes);
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
