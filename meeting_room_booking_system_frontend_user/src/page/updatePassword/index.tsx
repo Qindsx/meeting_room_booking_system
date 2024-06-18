@@ -65,7 +65,7 @@ export function UpdatePassword() {
 
 
   return <div id="updatePassword-container">
-    <h1>密码修改</h1>
+    <h1>会议室预订系统</h1>
     <Form
       form={form}
       {...layout1}

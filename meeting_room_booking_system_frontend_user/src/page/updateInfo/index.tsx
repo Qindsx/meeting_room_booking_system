@@ -71,7 +71,6 @@ export function UpdateInfo() {
 
 
     return <div id="updateInfo-container">
-        <h1>用户信息修改</h1>
         <Form
             form={form}
             {...layout1}
