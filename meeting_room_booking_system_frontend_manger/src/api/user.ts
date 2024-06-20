@@ -4,7 +4,7 @@ import { UpdatePassword } from "../page/updatePassword";
 import axiosInstance from "./interfaces";
 
 export async function login(username: string, password: string) {
-    return await axiosInstance.post('/user/login', {
+    return await axiosInstance.post('/user/admin/login', {
         username, password
     });
 }
@@ -32,7 +32,7 @@ export async function updatePasswordCaptcha(email: string) {
 }
 
 export async function updatePassword(data: UpdatePassword) {
-    return await axiosInstance.post('/user/update_password', data);
+    return await axiosInstance.post('/user/admin/update_password', data);
 }
 
 export async function getUserInfo() {
@@ -40,7 +40,7 @@ export async function getUserInfo() {
 }
 
 export async function updateInfo(data: UserInfo) {
-    return await axiosInstance.post('/user/update', data);
+    return await axiosInstance.post('/user/admi/update', data);
 }
 
 export async function updateUserInfoCaptcha() {

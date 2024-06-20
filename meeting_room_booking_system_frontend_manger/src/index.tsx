@@ -7,6 +7,8 @@ import { UpdatePassword } from './page/updatePassword';
 import { Index } from './page/index';
 import { UpdateInfo } from './page/updateInfo';
 import { ModifyMenu } from './page/modifyMenu';
+import { Menu } from './page/menu';
+import { UserManage } from './page/userManage';
 
 function Aaa() {
   return <div>aaa</div>;
@@ -34,6 +36,16 @@ const routes = [
     element: <Index></Index>,
     errorElement: <ErrorPage />,
     children: [
+      {
+        path: "/",
+        element: <Menu></Menu>,
+        children: [
+          {
+            path: 'user_manage',
+            element: <UserManage/>
+          }
+        ]
+      },
       {
         path: "user",
         element: <ModifyMenu></ModifyMenu>,
