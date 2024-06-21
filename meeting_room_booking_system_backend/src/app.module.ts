@@ -14,6 +14,7 @@ import { APP_GUARD } from '@nestjs/core'
 import { LoginGuard } from './guard/login.guard';
 import { PermissionGuard } from './guard/permission.guard';
 import { UploadModule } from './modules/upload/upload.module';
+import { MeetingRoomModule } from './meeting_room/meeting_room.module';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { UploadModule } from './modules/upload/upload.module';
       envFilePath:'src/.env'
     }),
     UploadModule,
+    MeetingRoomModule,
   ],
   controllers: [AppController],
   providers: [AppService,{

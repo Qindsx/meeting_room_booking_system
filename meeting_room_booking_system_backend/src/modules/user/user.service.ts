@@ -275,10 +275,10 @@ export class UserService {
         id: freezeUserDto.id
       }
     })
-
+    Logger.log(freezeUserDto.isFrozen)
     user.isFrozen = !freezeUserDto.isFrozen
 
-    await this.userRepository.save(user)
+    return await this.userRepository.save(user)
 
   }
 

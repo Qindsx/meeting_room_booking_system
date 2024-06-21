@@ -65,17 +65,17 @@ export function UserManage() {
         {
             title: '操作',
             render: (_, record) => (
-                <a href="#" onClick={() => {freezeUser(record.id)}}>冻结</a>
+                <a href="#" onClick={() => {freezeUser(record.id,record.isFrozen)}}>{!record.isFrozen ? '冻结' : '解冻'} </a>
             )
         }
     ], []);
     
-    const freezeUser = useCallback(async (id: number) => {
-        const res = await freeze(id);
+    const freezeUser = useCallback(async (id: number,isFrozen:boolean) => {
+        const res = await freeze(id,isFrozen);
     
         const { data } = res.data;
         if(res.status === 201 || res.status === 200) {
-            message.success('冻结成功');
+            message.success('操作成功');
             setNum(Math.random())
         } else {
             message.error(data || '系统繁忙，请稍后再试');
