@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, Inject, UnauthorizedException, ParseIntPipe, DefaultValuePipe, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, Inject, UnauthorizedException, ParseIntPipe, DefaultValuePipe, HttpStatus, Logger } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -398,8 +398,10 @@ export class UserController {
   @Post('freeze')
   @RequireLogin()
   async freeze(@Body() freezeUserDto: FreezeUserDto, @UserInfo('userId') userId: number) {
-    await this.userService.freezeUserById(freezeUserDto, userId)
-    return 'success'
+    const data  = await this.userService.freezeUserById(freezeUserDto, userId) 
+    Logger.log('freeze 返回信息：')
+    Logger.log(data)
+    return data
   }
 
 }

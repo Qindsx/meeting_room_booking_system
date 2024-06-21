@@ -11,7 +11,7 @@ import { ConfigService } from '@nestjs/config';
       const clinet = createClient({
         socket:{
           host:'localhost',
-          port:6479
+          port:6379
         },
         database:1
       });
