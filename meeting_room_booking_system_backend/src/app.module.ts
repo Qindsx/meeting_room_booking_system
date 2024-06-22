@@ -15,6 +15,7 @@ import { LoginGuard } from './guard/login.guard';
 import { PermissionGuard } from './guard/permission.guard';
 import { UploadModule } from './modules/upload/upload.module';
 import { MeetingRoomModule } from './meeting_room/meeting_room.module';
+import { MeetingRoom } from './meeting_room/entities/meeting_room.entity';
 
 @Module({
   imports: [
@@ -40,7 +41,7 @@ import { MeetingRoomModule } from './meeting_room/meeting_room.module';
       synchronize: true,
       logging: true,
       entities: [
-        Role,User,Permission
+        Role,User,Permission,MeetingRoom
       ],
       poolSize: 10,
       connectorPackage: 'mysql2',
