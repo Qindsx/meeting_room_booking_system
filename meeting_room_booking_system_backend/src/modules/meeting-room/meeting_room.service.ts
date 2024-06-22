@@ -1,6 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateMeetingRoomDto } from './dto/create-meeting_room.dto';
-import { UpdateMeetingRoomDto } from './dto/update-meeting_room.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { MeetingRoom } from './entities/meeting_room.entity';

@@ -8,20 +8,14 @@ import { User } from './modules/user/entities/user.entity';
 import { Permission } from './modules/user/entities/permission.entity';
 import { RedisModule } from './modules/redis/redis.module';
 import { EmailModule } from './modules/email/email.module';
-import { UserModule } from './modules/user/user.module';
-import { Role } from './modules/user/entities/role.entity';
-import { User } from './modules/user/entities/user.entity';
-import { Permission } from './modules/user/entities/permission.entity';
-import { RedisModule } from './modules/redis/redis.module';
-import { EmailModule } from './modules/email/email.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { APP_GUARD } from '@nestjs/core'
 import { LoginGuard } from './guard/login.guard';
 import { PermissionGuard } from './guard/permission.guard';
 import { UploadModule } from './modules/upload/upload.module';
-import { MeetingRoomModule } from './meeting_room/meeting_room.module';
-import { MeetingRoom } from './meeting_room/entities/meeting_room.entity';
+import { MeetingRoomModule } from './modules/meeting-room/meeting_room.module';
+import { MeetingRoom } from './modules/meeting-room/entities/meeting_room.entity';
 
 @Module({
   imports: [
