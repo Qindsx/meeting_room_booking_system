@@ -87,4 +87,10 @@ export class MeetingRoomService {
     } , room);
     return 'success';
   }
+
+  // 删除
+  async delete(id:number) {
+    // todo 物理删除需要修改为逻辑删除
+    return this.repository.delete(id)
+  }
 }
