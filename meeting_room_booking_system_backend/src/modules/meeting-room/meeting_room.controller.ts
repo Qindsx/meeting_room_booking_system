@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Inject, DefaultValuePipe, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Inject, DefaultValuePipe, Query, Put } from '@nestjs/common';
 import { MeetingRoomService } from './meeting_room.service';
 import { CreateMeetingRoomDto } from './dto/create-meeting_room.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -6,6 +6,7 @@ import { MeetingRoom } from './entities/meeting_room.entity';
 import { Repository } from 'typeorm';
 import { generateParseIntPipe } from 'src/utils/utils';
 import { RequireLogin } from 'src/decorator/custom.decorator';
+import { UpdateMeetingRoomDto } from './dto/update-meeting_room.dto';
 
 @Controller('meeting-room')
 export class MeetingRoomController {
@@ -26,4 +27,9 @@ export class MeetingRoomController {
     return await this.meetingRoomService.cerate(meetingRoomDto)
   }
 
+  @Put('update')
+  @RequireLogin()
+  async update(@Body() updateMeetingRoomDto:UpdateMeetingRoomDto) {
+    return this.meetingRoomService.update(updateMeetingRoomDto)
+  }
 }

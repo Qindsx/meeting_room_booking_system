@@ -3,6 +3,7 @@ import { CreateMeetingRoomDto } from './dto/create-meeting_room.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { MeetingRoom } from './entities/meeting_room.entity';
+import { UpdateMeetingRoomDto } from './dto/update-meeting_room.dto';
 
 @Injectable()
 export class MeetingRoomService {
@@ -51,12 +52,39 @@ export class MeetingRoomService {
 
   // 创建方法
   async cerate(meetingRoomDto:CreateMeetingRoomDto) {
-    let room = await this.repository.findOneBy({
+    const room = await this.repository.findOneBy({
       name:meetingRoomDto.name
     })
     if(room) {
       throw new BadRequestException('该会议室已存在')
     }
     return (await this.repository.insert(meetingRoomDto)).generatedMaps
+  }
+
+  // 更新方法
+  async update(updateMeetingRoomDto:UpdateMeetingRoomDto) {
+    const room = await this.repository.findOneBy({
+      id:updateMeetingRoomDto.id
+    })
+
+    if(room) {
+      throw new BadRequestException('该会议室不存在')
+    }
+
+    room.capacity = updateMeetingRoomDto.capacity
+    room.name = updateMeetingRoomDto.name
+    room.location = updateMeetingRoomDto.location
+
+    if(updateMeetingRoomDto.description) {
+      room.description = updateMeetingRoomDto.description;
+    }
+    if(updateMeetingRoomDto.equipment) {
+      room.equipment = updateMeetingRoomDto.equipment;
+    }
+
+    await this.repository.update({
+      id: room.id
+    } , room);
+    return 'success';
   }
 }
