@@ -33,9 +33,15 @@ export class MeetingRoomController {
     return await this.meetingRoomService.update(updateMeetingRoomDto)
   }
 
-  @Delete('delete:id')
+  @Delete('delete/:id')
   @RequireLogin()
   async delete(@Param('id') id:number){
     return await this.meetingRoomService.delete(id)
+  }
+
+  @Get('detail/:id')
+  @RequireLogin()
+  async detail(@Param('id') id:number){
+    return await this.meetingRoomService.detail(id)
   }
 }

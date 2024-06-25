@@ -93,4 +93,11 @@ export class MeetingRoomService {
     // todo 物理删除需要修改为逻辑删除
     return this.repository.delete(id)
   }
+
+  //  详情
+  async detail(id:number) {
+    return await this.repository.findOneBy({
+      id
+    })
+  }
 }
