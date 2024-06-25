@@ -17,8 +17,11 @@ export class MeetingRoomController {
   async list(
     @Query('pageNo', new DefaultValuePipe(1), generateParseIntPipe('pageNo')) pageNo: number,
     @Query('pageSize', new DefaultValuePipe(2), generateParseIntPipe('pageSize')) pageSize: number,
+    @Query('name') name: string,
+    @Query('capacity') capacity: number,
+    @Query('equipment') equipment: string
   ){
-    return await this.meetingRoomService.getList(pageNo,pageSize)
+    return await this.meetingRoomService.getList(pageNo,pageSize,name,capacity,equipment)
   }
 
   @Post('create')

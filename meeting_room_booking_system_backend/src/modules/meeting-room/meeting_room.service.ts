@@ -1,7 +1,7 @@
 import { BadRequestException, HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { CreateMeetingRoomDto } from './dto/create-meeting_room.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { MeetingRoom } from './entities/meeting_room.entity';
 import { UpdateMeetingRoomDto } from './dto/update-meeting_room.dto';
 
@@ -34,15 +34,29 @@ export class MeetingRoomService {
   }
 
   // 获取列表数据
-  async getList(pageNo: number, pageSize: number) {
+  async getList(pageNo: number, pageSize: number,name:string,equipment:number,capacity:string) {
     if(pageNo<0){
       return new HttpException('pageNo必须大于0', HttpStatus.BAD_REQUEST)
     }
     const sikp = (pageNo - 1) * pageSize
 
+    const condition: Record<string, any> = {};
+
+    if(name) {
+        condition.name = Like(`%${name}%`);   
+    }
+    if(equipment) {
+        condition.equipment = Like(`%${equipment}%`); 
+    }
+    if(capacity) {
+        condition.capacity = capacity;
+    }
+
+
     const [meetingRoomList,totalCount] = await this.repository.findAndCount({
       skip:sikp,
-      take:pageSize
+      take:pageSize,
+      where:condition
     })
     return {
       meetingRoomList,
