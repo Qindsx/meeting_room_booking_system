@@ -9,6 +9,7 @@ import { UpdateInfo } from './page/updateInfo';
 import { ModifyMenu } from './page/modifyMenu';
 import { Menu } from './page/menu';
 import { UserManage } from './page/userManage';
+import { MeetingRoomManage } from './page/meetingRoomManage';
 
 function Aaa() {
   return <div>aaa</div>;
@@ -43,6 +44,10 @@ const routes = [
           {
             path: 'user_manage',
             element: <UserManage/>
+          },
+          {
+            path: 'meeting_room_manage',
+            element: <MeetingRoomManage/>
           }
         ]
       },
