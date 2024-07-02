@@ -11,3 +11,8 @@ export async function searchManage( name:string,capacity:string,equipment:string
       }
     });
 }
+
+
+export async function deleteRoom( id:number) {
+  return await axiosInstance.delete('/meeting-room/delete/' + id);
+}

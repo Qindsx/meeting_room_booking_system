@@ -1,11 +1,12 @@
-import { Button, Form, Input, Table } from 'antd'
+import { Button, Form, Input, Popconfirm, Table, message } from 'antd'
 import './index.css'
 import { useForm } from 'antd/es/form/Form'
-import { useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ColumnsType } from 'antd/es/table'
+import { deleteRoom, searchManage } from '../../api/manage'
 
 interface RoomManageTableType {
-  id:number,
+  id: number,
   name: string,
   capacity: number,
   location: string,
@@ -14,10 +15,16 @@ interface RoomManageTableType {
   createTime: Date;
 }
 
+interface SearchType {
+  equipment: string,
+  name: string,
+  capacity: string,
+}
+
 export const MeetingRoomManage = () => {
-  const [form] = useForm()
-  const [pageNo, setPageNo] = useState()
-  const [pageSize, setPageSize] = useState()
+  const [pageNo, setPageNo] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
+  const [listData, setListData] = useState<RoomManageTableType[]>([])
 
   const columns: ColumnsType<RoomManageTableType> = useMemo(() => [
     {
@@ -26,7 +33,7 @@ export const MeetingRoomManage = () => {
     },
     {
       title: '容纳人数',
-      dataIndex: 'number',
+      dataIndex: 'capacity',
     },
     {
       title: '位置',
@@ -48,30 +55,67 @@ export const MeetingRoomManage = () => {
       title: '操作',
       render: (_, record) => (
         <span>
-        <a href="#" onClick={() => { update(record) }}>修改</a>
-          <a href="#" onClick={() => { deelte(record.id) }}>删除</a>
+          <a href="#" onClick={() => { update(record) }}>修改</a>
+          <Popconfirm
+            title="是否删除"
+            description="确认删除该条会议室信息吗?"
+            onConfirm={()=>{deleteRoomClick(record.id)}}
+            onCancel={()=>{}}
+            okText="Yes"
+            cancelText="No"
+          >
+            <a href="#">删除</a>
+          </Popconfirm>
         </span>
       )
     }
   ], [])
 
-  // 删除
-  const deelte = (id:number) => {
+  // 分页事件
+  const changePage = useCallback((page: number, pageNumer: number) => {
+    setPageNo(page)
+    setPageSize(pageNumer)
+  }, [])
 
-  }
+  // 删除
+  const deleteRoomClick = useCallback(async (id: number) => {
+    try {
+      const res = await deleteRoom(id)
+      if(res.data.code == 200) {
+        message.success('删除成功')
+        searchRoom({ name: form.getFieldValue('name') || '', capacity: form.getFieldValue('capacity') || '', equipment: form.getFieldValue('equipment') || '' })
+      }
+    } catch (error) {
+      message.error('系统错误')
+    }
+  }, [])
 
   // 修改
-  const update = (record:RoomManageTableType)=>{
+  const update = (record: RoomManageTableType) => {
 
   }
 
   // 列表请求
-  const searchRoom = () => {
-    const name = form.getFieldValue('name')
-    const capacity = form.getFieldValue('capacity')
-    const equipment = form.getFieldValue('equipment')
+  const searchRoom = useCallback(async (searchVale: SearchType) => {
+    try {
+      const { data } = await searchManage(searchVale.name, searchVale.capacity, searchVale.equipment, pageNo, pageSize)
 
-  }
+      setListData(data.data.meetingRoomList.map((item: RoomManageTableType) => {
+        return {
+          key: item.id,
+          ...item
+        }
+      }))
+    } catch (error) {
+      message.error('系统错误')
+    }
+
+  }, [])
+
+  const [form] = useForm()
+  useEffect(() => {
+    searchRoom({ name: form.getFieldValue('name') || '', capacity: form.getFieldValue('capacity') || '', equipment: form.getFieldValue('equipment') || '' })
+  }, [pageNo, pageSize])
   return <div id="userManage-container">
     <div className='userManage-container'>
       <Form
@@ -101,7 +145,16 @@ export const MeetingRoomManage = () => {
       </Form>
     </div>
     <div className='userManage-table'>
-      <Table columns={columns}></Table>
+      <Table
+        dataSource={listData}
+        columns={columns}
+        pagination={{
+          current: pageNo,
+          pageSize,
+          onChange: changePage
+        }
+        }>
+      </Table>
     </div>
   </div>
 

@@ -14,7 +14,9 @@ export class UnloginFilter<T> implements ExceptionFilter {
   catch(exception: UnLoginException, host: ArgumentsHost) {
     const response = host.switchToHttp().getResponse<Response>();
 
-    response.json({
+    response
+    .status(HttpStatus.UNAUTHORIZED)
+    .json({
       code: HttpStatus.UNAUTHORIZED,
       message: 'fail',
       data: exception.message || '用户未登录'
